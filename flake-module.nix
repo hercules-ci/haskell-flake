@@ -99,6 +99,19 @@ in
                 default = hp: { };
                 defaultText = ''Build tools useful for Haskell development are included by default.'';
               };
+              extraLibraries = mkOption {
+                type = functionTo (types.attrsOf (types.nullOr types.package));
+                description = ''
+                  Extra Haskell libraries available in the shell's environment.
+
+                  The argument is the Haskell package set.
+
+                  The return type is an attribute set for overridability and syntax, as only the values are used.
+                '';
+                default = hp: { };
+                defaultText = lib.literalExpression "hp: { }";
+                example = lib.literalExpression "hp: { inherit (hp) releaser; }";
+              };
               hlsCheck = mkOption {
                 default = { };
                 type = hlsCheckSubmodule;
@@ -211,6 +224,7 @@ in
                       (lib.attrNames cfg.packages);
                   withHoogle = true;
                   nativeBuildInputs = buildTools;
+                  extraDependencies = p: { libraryHaskellDepends = builtins.attrValues (cfg.extraLibraries p); };
                 };
                 devShellCheck = name: command:
                   runCommandInSimulatedShell devShell self "${projectKey}-${name}-check" { } command;
